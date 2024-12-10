@@ -1,0 +1,185 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- left column -->
+        <div class="col-md-12">
+            <!-- general form elements -->
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Quick Example</h3>
+                </div>
+                <!-- /.card-header -->
+                <!-- form start -->
+                <form method="post" enctype="multipart/form-data">
+
+                    <div class="card-body">
+
+                        <div class="form-group">
+                            <label for="exampleInputFile">File input</label>
+                            <div class="input-group">
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="xlsFile" name="xlsFile">
+                                    <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                                </div>
+
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- /.card-body -->
+
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+            <!-- /.card -->
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Xls Read Example</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="exampleSelectRounded0">Select Excel File<code></code></label>
+                        <select class="custom-select rounded-0" id="selFile" name="selFile">
+                            <option value="0">Select</option>
+                            @foreach (var item in Model.xlsList)
+                            {
+                                <option value="@item.Value">@item.Key</option>
+
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleSelectRounded0">Select Sheet<code></code></label>
+                        <select class="custom-select rounded-0" id="selSheet" name="selSheet">
+                        </select>
+                    </div>
+                    <div class="row">
+                        <label for="exampleSelectRounded0">Get Table Columns</label>                       
+                        <div class="col-4">
+                            <input type="text" class="form-control" id="tableColStart" placeholder="First Column Name">
+                        </div>
+                        <div class="col-4">                          
+                            <input type="text" class="form-control" id="tableColEnd" placeholder="Last Column Name"> <code>Optional</code>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <code id="tableColResult"></code>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary" id="btnSearchCol">Submit</button>
+                </div>
+            </div>         
+        </div>
+
+    </div>
+        <!--/.col (left) -->
+      
+    </div>
+    <!-- /.row -->
+</div><!-- /.container-fluid -->
+@section Scripts {
+    <script>
+        console.log("Hello from Razor view!");
+        const selFile = document.getElementById("selFile");
+        const selSheet = document.getElementById("selSheet");
+
+        const ApiService = {
+            async GetXlsSheet(id) {
+                try {
+                    const response = await fetch(`/api/v1/xls/${id}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorMsg = await response.json();
+                        throw new Error(`HTTP error! status: ${response.status} : ${JSON.stringify(errorMsg)}`);
+                    }
+
+                    return await response.json();
+                }
+                catch (error) {
+                    console.error("Error GetXlsSheet: " + id, error);
+                    throw error;
+                }
+            },
+
+            async GetTableColumns(id, sheet, searchText, colEndText) {
+                const formData = new FormData();
+                formData.append("id", id);
+                formData.append("sheet", sheet);
+                formData.append("searchText", searchText);
+                formData.append("colEndText", colEndText);
+                try {
+                    const response = await fetch(`/api/v1/xls/search`, {
+                        method: 'POST',                        
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const errorMsg = await response.json();
+                        throw new Error(`HTTP error! status: ${response.status} : ${JSON.stringify(errorMsg)}`);
+                    }
+
+                    return await response.json();
+                }
+                catch (error) {
+                    console.error("Error SearchCol: " + id, error);
+                    throw error;
+                }
+            },
+        };
+
+        selFile.addEventListener('change', async function () {
+            selSheet.innerHTML = '';
+            const selectedIndex = selFile.value;
+            if (selectedIndex == 0) return;
+            try{
+                const sheetList = await ApiService.GetXlsSheet(selectedIndex);
+                sheetList.forEach(item => {
+                    // Create a new option element
+                    const option = document.createElement('option');
+
+                    // Set the text and value of the option
+                    option.textContent = item;
+                    option.value = item; // Example value formatting
+
+                    // Append the option to the select element
+                    selSheet.appendChild(option);
+                });
+            }
+            catch (error) {
+                console.error("Error selFile Change: " + selectedIndex, error);
+                throw error;
+            }
+           
+        });
+
+        document.getElementById("btnSearchCol").addEventListener('click', async function (e) {
+            e.preventDefault();
+            const id = selFile.value;
+            const sheet = selSheet.value;
+            const searchText = document.getElementById('tableColStart').value;
+            const colEndText = document.getElementById('tableColEnd').value;
+            const jsonResult = await ApiService.GetTableColumns(id, sheet, searchText, colEndText);
+
+            document.getElementById('tableColResult').innerHTML = JSON.stringify(jsonResult);
+
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+
+        });
+
+      
+    </script>
+}
