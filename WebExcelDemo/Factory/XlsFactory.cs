@@ -102,7 +102,7 @@ namespace Factory
 
         /// <summary>
         /// Insert table column 
-        /// *** Need closedXml version 0.103 to work *** DO NOT UPDATE TO 0.104
+        /// *** Need closedXml version 0.102.3 to work *** DO NOT UPDATE TO 0.104
         /// https://github.com/ClosedXML/ClosedXML/issues/2425
         /// </summary>
         /// <param name="filename"></param>
@@ -142,7 +142,7 @@ namespace Factory
 
         /// <summary>
         /// Insert Row to table
-        /// *** Need closedXml version 0.103 to work *** DO NOT UPDATE TO 0.104
+        /// *** Need closedXml version 0.102.3 to work *** DO NOT UPDATE TO 0.104
         /// https://github.com/ClosedXML/ClosedXML/issues/2425
         /// </summary>
         /// <param name="filename"></param>
